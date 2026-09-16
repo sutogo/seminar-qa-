@@ -3,7 +3,10 @@
 クライアントからサーバへの書き込みは REST，サーバからクライアントへの更新配信は WebSocket に分離する．
 WebSocket はサーバ発の一方向であり，クライアントからは何も送信しない．
 
-版：0.3 ／ 2026-09-16
+版：0.4 ／ 2026-09-16
+
+0.3 からの変更点：記録の生成と配送を分離し，Teams 投稿を任意とした（§記録の出力）．
+`close` の応答に `record_md` を追加．学年に `D2` / `D3` を追加．
 
 0.2 からの変更点：QR画像のエンドポイントを追加，セッションの起動時自動生成を明記，
 `participant_count` とグラフの分母の定義を分離，発表中は `questions` を配信しない方針へ変更，
@@ -52,7 +55,7 @@ IPアドレスをコードや設定に書く必要がない．
 |---|---|---|---|
 | POST | `/api/sessions/{sid}/participants` | `{grade}` | `{token}` |
 
-`grade` は `B3` / `B4` / `M1` / `M2` / `D1` / `teacher` のいずれか．
+`grade` は `B3` / `B4` / `M1` / `M2` / `D1` / `D2` / `D3` / `teacher` のいずれか．
 `token` はランダムな32文字．クライアントは `localStorage` に保存し，以降の全ての POST に含める．
 
 ### 発表
@@ -62,7 +65,7 @@ IPアドレスをコードや設定に書く必要がない．
 | POST | `/api/sessions/{sid}/presentations` | `{presenter, title}` | `{presentation_id}` |
 | POST | `/api/presentations/{pid}/start` | — | `204` |
 | POST | `/api/presentations/{pid}/end` | — | `204` |
-| POST | `/api/presentations/{pid}/close` | — | `{teams_posted: bool}` |
+| POST | `/api/presentations/{pid}/close` | — | `{teams_posted: bool, record_md: string}` |
 
 `end` で質疑モードへ移行．`close` で完了し，Teams への投稿を行う．
 
@@ -186,16 +189,45 @@ IPアドレスをコードや設定に書く必要がない．
 クライアント側で差分を保持する必要はない．
 ただし発表中の自分の投稿一覧のみは，サーバから再送されないため `localStorage` から復元する．
 
-## Teams 投稿
+## 記録の出力
 
-`close` 時に Power Automate Workflows の Webhook URL へ POST する．
-ペイロードは Adaptive Card 形式（`MessageCard` は廃止済みのため使用不可）．
+`close` 時に，発表1件分の記録を Markdown で生成する．
+**記録の生成と配送を分離する．** 配送手段（Teams）が使えない場合でも記録は必ず残る．
 
 含める内容：
 
 - 発表者名，発表タイトル，日時
-- 参加人数，質問件数
+- 参加人数（その発表中に接続した人数），質問件数
 - わからんが集中した時間帯（`peak`）と最大割合
 - 質問一覧（共感数順，上位5件まで）
 
+### 画面への表示（既定．常に行う）
+
+`close` の応答に記録の Markdown を `record_md` として含める．
+`/review` は「記録をコピー」ボタンを表示し，発表者が任意の場所
+（Teams のチャット，OneNote 等）へ自分で貼る．
+外部への通信も，Teams の権限も要らない．
+
+### Teams への投稿（任意）
+
+環境変数 `TEAMS_WEBHOOK_URL` が設定されている場合に限り，
+同じ内容を Power Automate Workflows の Webhook へ POST する．
+未設定であれば投稿を試みず，`teams_posted` は `false` とする．
+
+ペイロードは Adaptive Card 形式（`MessageCard` は廃止済みのため使用不可）．
+Workflows はカードを `attachments` で包んだ次の形を要求する．
+
+```json
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "content": { "type": "AdaptiveCard", "version": "1.4", "body": [] }
+    }
+  ]
+}
+```
+
 投稿の失敗はアプリの動作を止めない．失敗をログに残し，画面には影響させないこと．
+`record_md` は投稿の成否にかかわらず必ず返す．

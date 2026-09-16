@@ -78,10 +78,10 @@ python tools/fake_audience.py --session <session_id> --count 12
 2. スクリーンにQRコードを投影して参加者に読ませる
 3. 発表者が `/present` を開き「発表開始」
 4. 発表終了後，スクリーンを `/review` に切り替えて質疑
-5. 「質疑終了」で Teams へ投稿．次の発表者に交代
+5. 「質疑終了」で記録を出力（コピー，または Teams へ投稿）．次の発表者に交代
 
 ## 既知の前提
 
 - 学内 Wi-Fi のクライアント間通信が遮断されていると動作しない．事前に確認すること
-- Teams 連携には Power Automate Workflows の Webhook URL が必要
-  （環境変数 `TEAMS_WEBHOOK_URL` に設定する）
+- Teams 連携は任意である．`TEAMS_WEBHOOK_URL`（Power Automate Workflows の Webhook URL）を
+  設定した場合のみ投稿する．未設定でも質疑終了時の記録は質疑ビューからコピーできる
