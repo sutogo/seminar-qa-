@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ゼミ質疑アプリ ワイヤーフレーム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f4f2;
+  --panel:#ffffff;
+  --ink:#1b1b1a;
+  --ink-mid:#5f5f5c;
+  --ink-faint:#9a9a96;
+  --line:#c9c9c4;
+  --line-strong:#8f8f8a;
+  --fill:#e8e8e4;
+  --accent:#b4472e;
+  --note:#2f6b6b;
+  --font:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1a1a19;
+    --panel:#232322;
+    --ink:#eceae5;
+    --ink-mid:#a8a6a1;
+    --ink-faint:#6e6d69;
+    --line:#45443f;
+    --line-strong:#6e6d69;
+    --fill:#2c2c2a;
+    --accent:#e07a5f;
+    --note:#7fb5b5;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1a1a19; --panel:#232322; --ink:#eceae5; --ink-mid:#a8a6a1;
+  --ink-faint:#6e6d69; --line:#45443f; --line-strong:#6e6d69;
+  --fill:#2c2c2a; --accent:#e07a5f; --note:#7fb5b5;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--font); line-height:1.7;
+  padding:32px 20px 64px;
+}
+.wrap{max-width:1180px;margin:0 auto;}
+h1{font-size:1.4rem;margin:0 0 4px;letter-spacing:.02em;}
+.sub{color:var(--ink-mid);font-size:.85rem;margin:0 0 36px;}
+.phase{
+  margin:0 0 14px;padding:6px 0;border-bottom:2px solid var(--line-strong);
+  font-size:.95rem;font-weight:700;letter-spacing:.06em;
+}
+.phase span{color:var(--ink-faint);font-weight:400;font-size:.8rem;margin-left:10px;letter-spacing:0;}
+.row{display:flex;flex-wrap:wrap;gap:28px;margin:0 0 52px;align-items:flex-start;}
+.col{flex:1 1 300px;min-width:280px;}
+.caption{font-size:.8rem;color:var(--ink-mid);margin:10px 2px 0;}
+.caption b{color:var(--ink);font-weight:500;}
+
+/* device frames */
+.phone{
+  width:290px;max-width:100%;border:2px solid var(--line-strong);border-radius:22px;
+  background:var(--panel);padding:10px;
+}
+.screen{
+  width:100%;border:2px solid var(--line-strong);border-radius:8px;
+  background:var(--panel);padding:14px;
+}
+.bar{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:.7rem;color:var(--ink-faint);padding:0 4px 8px;
+  border-bottom:1px dashed var(--line);margin-bottom:12px;
+}
+
+/* generic blocks */
+.box{border:1px dashed var(--line);border-radius:6px;padding:10px;margin-bottom:10px;background:var(--fill);}
+.box.plain{background:transparent;}
+.lbl{font-size:.68rem;color:var(--ink-faint);letter-spacing:.08em;margin-bottom:6px;}
+.btn{
+  display:block;width:100%;text-align:center;border:1.5px solid var(--line-strong);
+  border-radius:6px;padding:9px;font-size:.85rem;background:var(--panel);margin-bottom:8px;
+}
+.btn.big{padding:22px 9px;font-size:1.05rem;font-weight:700;border-width:2px;border-color:var(--accent);color:var(--accent);}
+.btn.ghost{font-size:.75rem;padding:6px;color:var(--ink-mid);}
+.field{border:1.5px solid var(--line-strong);border-radius:6px;padding:10px;font-size:.8rem;color:var(--ink-faint);background:var(--panel);margin-bottom:8px;}
+.q{
+  border:1px solid var(--line);border-radius:6px;padding:9px 10px;margin-bottom:8px;
+  background:var(--panel);font-size:.8rem;display:flex;gap:10px;align-items:flex-start;
+}
+.q .txt{flex:1;color:var(--ink-mid);}
+.emp{
+  border:1px solid var(--line-strong);border-radius:20px;padding:3px 9px;
+  font-size:.72rem;white-space:nowrap;color:var(--ink);
+}
+.emp.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.num{font-size:.75rem;color:var(--ink-faint);min-width:18px;}
+.done{opacity:.45;text-decoration:line-through;}
+.qr{
+  width:76px;height:76px;border:2px solid var(--line-strong);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;font-size:.62rem;color:var(--ink-faint);
+  background:repeating-linear-gradient(45deg,var(--fill),var(--fill) 4px,transparent 4px,transparent 8px);
+}
+.note{
+  border-left:3px solid var(--note);padding:2px 0 2px 10px;margin:8px 2px 0;
+  font-size:.76rem;color:var(--note);
+}
+.chart{border:1px dashed var(--line);border-radius:6px;padding:8px;background:var(--fill);}
+svg{display:block;width:100%;height:auto;}
+.flow{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 40px;
+  font-size:.8rem;color:var(--ink-mid);
+}
+.flow div{border:1px solid var(--line);border-radius:5px;padding:6px 12px;background:var(--panel);}
+.flow .ar{border:none;background:none;color:var(--ink-faint);padding:0 2px;}
+.scroll{overflow-x:auto;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>ゼミ質疑アプリ ワイヤーフレーム</h1>
+<p class="sub">中間発表・期末発表レビュー用／半日ハッカソン版</p>
+
+<div class="flow">
+  <div>① 発表中：黙って溜める</div><div class="ar">→</div>
+  <div>② 発表終了：集計</div><div class="ar">→</div>
+  <div>③ 質疑：共感順に消化</div><div class="ar">→</div>
+  <div>④ 終了：Teamsへ記録</div>
+</div>
+
+<!-- PHASE 1 -->
+<div class="phase">① 発表中 <span>スクリーンにはPowerPointのみ。アプリは映さない</span></div>
+<div class="row">
+
+  <div class="col">
+    <div class="phone">
+      <div class="bar"><span>渡嘉敷 浩祐／中間発表</span><span>14:05</span></div>
+      <div class="lbl">わからん送信</div>
+      <div class="btn big">今わからなくなった</div>
+      <div class="note" style="border-color:var(--ink-faint);color:var(--ink-faint)">押した時刻だけ記録。画面には何も出ない</div>
+      <div style="height:14px"></div>
+      <div class="lbl">質問を投稿（匿名）</div>
+      <div class="field">思いついた質問をここに入力…</div>
+      <button class="btn">送信</button>
+      <div style="height:10px"></div>
+      <div class="lbl">自分が送った質問</div>
+      <div class="q"><span class="txt">荷重の閾値はどう決めた？</span></div>
+      <div class="q"><span class="txt">被験者数は何人ですか</span></div>
+    </div>
+    <p class="caption"><b>参加者スマホ　/join</b><br>入力は匿名。投稿しても他人の画面には即時反映しない（発表の妨げを防ぐ）</p>
+  </div>
+
+  <div class="col">
+    <div class="screen" style="max-width:420px">
+      <div class="bar"><span>発表者ビュー（手元PCのみ）</span><span>経過 08:12</span></div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div class="qr">QR</div>
+        <div style="flex:1">
+          <div class="lbl">参加者</div>
+          <div style="font-size:1.6rem;font-weight:700;line-height:1.2">12<span style="font-size:.8rem;font-weight:400;color:var(--ink-faint)"> 人接続中</span></div>
+          <div class="lbl" style="margin-top:8px">集まった質問</div>
+          <div style="font-size:1.6rem;font-weight:700;line-height:1.2">7<span style="font-size:.8rem;font-weight:400;color:var(--ink-faint)"> 件</span></div>
+        </div>
+      </div>
+      <div style="height:12px"></div>
+      <button class="btn" style="border-color:var(--accent);color:var(--accent);font-weight:700">発表終了 → 質疑へ</button>
+      <div class="note">発表中はこの画面だけ。質問の中身は表示しない（発表者が動揺しないように）</div>
+    </div>
+    <p class="caption"><b>発表者ビュー　/present</b><br>QRは開始時にスクリーンへ一度だけ投影して読ませる</p>
+  </div>
+
+</div>
+
+<!-- PHASE 2 -->
+<div class="phase">③ 質疑 <span>ここで初めてスクリーンをブラウザに切り替える</span></div>
+<div class="row">
+
+  <div class="col" style="flex:2 1 520px">
+    <div class="screen">
+      <div class="bar"><span>質疑ビュー（スクリーン投影）</span><span>質問 7件 ／ 未消化 5件</span></div>
+
+      <div class="lbl">わからん率の推移（発表開始からの経過時間）</div>
+      <div class="chart scroll">
+        <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="わからん率の折れ線グラフ">
+          <g stroke="var(--line)" stroke-width="1">
+            <line x1="40" y1="20" x2="540" y2="20"/>
+            <line x1="40" y1="60" x2="540" y2="60"/>
+            <line x1="40" y1="100" x2="540" y2="100"/>
+            <line x1="40" y1="120" x2="540" y2="120" stroke="var(--line-strong)"/>
+          </g>
+          <g fill="var(--ink-faint)" font-size="10" font-family="var(--font)">
+            <text x="8" y="24">80%</text><text x="8" y="64">40%</text><text x="8" y="124">0%</text>
+            <text x="40" y="140">0分</text><text x="160" y="140">4分</text>
+            <text x="280" y="140">8分</text><text x="400" y="140">12分</text><text x="505" y="140">16分</text>
+          </g>
+          <polyline points="40,118 80,114 120,108 160,96 200,70 240,34 280,26 320,44 360,88 400,104 440,110 480,112 520,116"
+            fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
+          <rect x="222" y="16" width="80" height="104" fill="var(--accent)" opacity="0.10"/>
+          <text x="228" y="14" font-size="10" fill="var(--accent)" font-family="var(--font)">7〜9分に集中</text>
+        </svg>
+      </div>
+      <div class="note">「7分あたりで全員が脱落」が一目で分かる。スライド番号との対応は口頭で補う</div>
+
+      <div style="height:18px"></div>
+      <div class="lbl">質問リスト（共感の多い順）</div>
+
+      <div class="q">
+        <span class="num">1</span>
+        <span class="txt">7分あたりの荷重バランスの算出式が追えなかった。どの座標系で見ている？</span>
+        <span class="emp on">共感 8</span>
+      </div>
+      <div class="q">
+        <span class="num">2</span>
+        <span class="txt">被験者数と再現性の検証はどこまで済んでいる？</span>
+        <span class="emp on">共感 5</span>
+      </div>
+      <div class="q">
+        <span class="num">3</span>
+        <span class="txt">既存の術中計測機器との違いは？</span>
+        <span class="emp">共感 2</span>
+      </div>
+      <div class="q done">
+        <span class="num">4</span>
+        <span class="txt">閾値はどう決めたのか</span>
+        <span class="emp">消化済</span>
+      </div>
+
+      <div style="height:6px"></div>
+      <button class="btn ghost">選択した質問を「消化済」にする</button>
+      <button class="btn" style="border-color:var(--accent);color:var(--accent);font-weight:700">質疑終了 → Teamsへ投稿</button>
+    </div>
+    <p class="caption"><b>質疑ビュー　/review</b><br>上から順に消化するだけで質疑が進行する。共感数が司会の代わりをする</p>
+  </div>
+
+  <div class="col">
+    <div class="phone">
+      <div class="bar"><span>質疑中</span><span>14:22</span></div>
+      <div class="lbl">みんなの質問（共感を押す）</div>
+      <div class="q"><span class="txt">7分あたりの算出式が追えなかった…</span><span class="emp on">8</span></div>
+      <div class="q"><span class="txt">被験者数と再現性は？</span><span class="emp on">5</span></div>
+      <div class="q"><span class="txt">既存機器との違いは？</span><span class="emp">2</span></div>
+      <div class="q"><span class="txt">今後の実装予定は？</span><span class="emp">0</span></div>
+      <div style="height:8px"></div>
+      <div class="lbl">追加で質問する</div>
+      <div class="field">質疑中に思いついた質問…</div>
+      <button class="btn">送信</button>
+    </div>
+    <p class="caption"><b>参加者スマホ（質疑中）</b><br>質疑に入った瞬間に画面が切り替わり、共感ボタンが出る</p>
+  </div>
+
+</div>
+
+<!-- PHASE 3 -->
+<div class="phase">④ 終了後 <span>Teamsチャネルへ投稿</span></div>
+<div class="row">
+  <div class="col" style="flex:1 1 440px">
+    <div class="screen" style="max-width:480px">
+      <div class="bar"><span>Teams 通知（Adaptive Card）</span><span>Workflows経由</span></div>
+      <div class="box plain" style="border-style:solid">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:6px">中間発表レビュー：渡嘉敷 浩祐</div>
+        <div style="font-size:.76rem;color:var(--ink-mid);margin-bottom:10px">2026-09-16 14:05 ／ 参加 12人 ／ 質問 7件</div>
+        <div class="lbl">わからんが集中した時間帯</div>
+        <div style="font-size:.8rem;margin-bottom:10px">7分00秒 〜 9分30秒（最大 67%）</div>
+        <div class="lbl">質問（共感順）</div>
+        <div style="font-size:.78rem;color:var(--ink-mid)">
+          1. 荷重バランスの算出式／座標系　<b>共感8</b><br>
+          2. 被験者数と再現性の検証　<b>共感5</b><br>
+          3. 既存の術中計測機器との違い　<b>共感2</b>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Teams投稿</b><br>発表者の手元に記録が残る。期末発表時に中間の内容と並べられる</p>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

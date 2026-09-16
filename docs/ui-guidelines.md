@@ -1,0 +1,163 @@
+# UI ガイドライン
+
+「モダンでリッチ」を，フレームワークではなく **配色・タイポグラフィ・余白・動き**の4点で実現する．
+この文書の値は `static/css/tokens.css` に実装する．各ファイルに直接色を書かないこと．
+
+## 前提
+
+- 質疑ビュー（`review.html`）は**プロジェクタ投影**される．最も重視する画面である
+- 参加者画面（`live.html`）は**スマートフォン**．片手で押せることを優先する
+- 会場は照明を落とす想定．全画面を**ダークテーマ固定**とし，ライトテーマは実装しない
+
+## 配色
+
+```css
+:root {
+  --bg:        #121211;  /* 背景．完全な黒は避ける */
+  --surface:   #1c1c1a;  /* カード面 */
+  --surface-2: #262623;  /* 前面に出す要素 */
+  --line:      #34332e;  /* 罫線 */
+
+  --ink:       #f2f0ea;  /* 主文字 */
+  --ink-mid:   #a8a59c;  /* 副次的な文字 */
+  --ink-faint: #6e6b64;  /* ラベル，補助 */
+
+  --accent:    #e2613c;  /* わからん系．暖色 */
+  --accent-dim:#5a2a1c;
+  --empathy:   #4a9d8f;  /* 共感系．寒色 */
+  --empathy-dim:#1e3a36;
+}
+```
+
+暖色と寒色を1つずつに絞る．**「わからん」は暖色，「共感」は寒色**で統一し，
+この2色以外のアクセントを増やさないこと．色数が増えた時点で安く見える．
+
+## タイポグラフィ
+
+投影で読ませるため，本文でも太めのウェイトを使う．
+
+```css
+--font-sans: "Zen Kaku Gothic New", "BIZ UDPGothic",
+             "Hiragino Sans", "Yu Gothic", sans-serif;
+--font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+```
+
+フォントファイルは `static/fonts/` に配置して `@font-face` で読み込む．
+**CDN やオンラインのフォントサービスは使わない**（会場のネットワークに依存させない）．
+用意が間に合わない場合はシステムフォントで妥協してよい．
+
+サイズ（`review.html` 投影時を基準とする）：
+
+| 用途 | サイズ | ウェイト |
+|---|---|---|
+| 質問本文 | `1.5rem` | 500 |
+| 学年バッジ | `0.85rem` | 700 |
+| 共感数 | `1.25rem` | 700 |
+| 見出し | `2rem` | 700 |
+| グラフ軸ラベル | `0.9rem` | 400 |
+
+スマートフォン側は全体に `0.7` 倍程度で調整する．
+**最終的なサイズは実際にプロジェクタへ投影して決める．**手元のディスプレイでの判断は当てにならない．
+
+## 余白
+
+8px を基本単位とし，これ以外の値を使わない．
+
+```css
+--sp-1: 8px;  --sp-2: 16px; --sp-3: 24px;
+--sp-4: 32px; --sp-6: 48px; --sp-8: 64px;
+```
+
+角丸は `--radius: 12px` に統一．カードごとに変えない．
+
+## 動き
+
+### 質問カードの並び替え（最重要）
+
+共感が入って順位が変わる瞬間が，この作品で最も見られる箇所である．
+View Transitions API を用いる．
+
+```js
+function renderQuestions(items) {
+  if (!document.startViewTransition) { paint(items); return; }
+  document.startViewTransition(() => paint(items));
+}
+```
+
+各カードに固有の名前を振る：
+
+```js
+card.style.viewTransitionName = `q-${question.id}`;
+```
+
+```css
+::view-transition-group(*) {
+  animation-duration: 320ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+```
+
+同一ドキュメント内の View Transitions は Chrome 111以降，Firefox 144以降，Safari 18以降で動作する．
+非対応環境では DOM が普通に更新されるだけで壊れない．
+
+### カードの出現と消滅
+
+JavaScript を使わず CSS だけで書く．
+
+```css
+.card {
+  transition: opacity 200ms, transform 200ms, display 200ms allow-discrete;
+}
+@starting-style {
+  .card { opacity: 0; transform: translateY(8px); }
+}
+```
+
+### グラフの描画
+
+SVG の折れ線に `stroke-dasharray` と `stroke-dashoffset` を当て，
+質疑モードへ切り替わった瞬間に左から描き足されるようにする．
+
+```css
+.line { stroke-dasharray: var(--len); stroke-dashoffset: var(--len);
+        animation: draw 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+```
+
+ピーク区間の帯は，線を描き終えてから 200ms 遅れてフェードインさせる．
+
+### ボタンの押し心地
+
+```css
+.btn:active { transform: scale(0.96); transition: transform 80ms; }
+```
+
+「わからん」ボタンの押下時のみ `navigator.vibrate(15)` を呼ぶ（対応環境のみ）．
+送信済みの状態はボタンの色ではなく，**ボタン下の小さなカウンタ**で示す．
+連続で押した実感が欲しいが，画面が派手に変化すると発表の妨げになる．
+
+### 抑制すること
+
+- 画面全体のフェードやスライドは入れない．切り替えが遅く感じられる
+- 常時動き続ける装飾（パルス，シマー）は使わない．発表の集中を削ぐ
+- アニメーションの総時間は 400ms を超えない
+- `prefers-reduced-motion: reduce` を尊重し，全てのアニメーションを無効化する分岐を入れる
+
+## 画面ごとの要点
+
+### `live.html`（スマートフォン）
+
+「わからん」ボタンは画面幅いっぱい，高さ 96px 以上．
+発表に集中しながら**画面を見ずに押せる**ことを目標とする．
+質問入力欄はその下に置き，送信後は入力欄を空にして自分の投稿一覧へ追加する．
+
+### `review.html`（投影）
+
+上部3割にグラフ，下部7割に質問リスト．
+一度に見えるのは質問4件程度でよい．詰め込むと投影で読めなくなる．
+消化済みの質問は `opacity: 0.4` と取り消し線で末尾に送る．
+
+### `present.html`（発表者PC）
+
+数字を大きく見せるだけの画面．装飾は不要．
+発表中は質問の本文を出さないこと（`CLAUDE.md` 参照）．
