@@ -11,6 +11,7 @@
 import { api, storage } from "./api.js";
 import { connect } from "./ws.js";
 import { createOrderKeeper } from "./order.js";
+import { renderChart } from "./chart.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -23,6 +24,7 @@ const cards = new Map();
 
 let latest = [];
 let presentationId = null;
+let chartData = null;
 
 // 描画待ちの最新データと，実行中かどうか．
 // 演出（320ms）が終わる前に次の更新が来ると，前の演出が中断されてガタつく．
@@ -171,6 +173,33 @@ function resortNow() {
 }
 
 // --------------------------------------------------------------------------
+// グラフ
+// --------------------------------------------------------------------------
+
+/** chart は質疑へ移った時点で1回届く．再接続時にも再送される． */
+function applyChart(chart, animate = true) {
+  chartData = chart;
+  const host = $("chart");
+  host.hidden = false;
+  // 高さが確定してから測る必要があるため，表示を先に切り替える．
+  $("layout").classList.add("with-chart");
+  renderChart(host, chart, { animate });
+}
+
+function hideChart() {
+  chartData = null;
+  $("chart").hidden = true;
+  $("chart").replaceChildren();
+  $("layout").classList.remove("with-chart");
+}
+
+// 投影先を切り替えると解像度が変わることがある．
+// 描き直すが，演出は最初の1回だけでよい．
+addEventListener("resize", () => {
+  if (chartData) renderChart($("chart"), chartData, { animate: false });
+});
+
+// --------------------------------------------------------------------------
 // 状態
 // --------------------------------------------------------------------------
 
@@ -185,6 +214,7 @@ function applyState(msg) {
       keeper.reset();
       cards.clear();
       $("questions").replaceChildren();
+      hideChart();
     }
     $("pres-title").textContent = pres.title;
     $("pres-presenter").textContent = pres.presenter;
@@ -195,6 +225,7 @@ function applyState(msg) {
     presentationId = null;
     keeper.reset();
     cards.clear();
+    hideChart();
     render([]);
   }
   meta.push(`接続中 ${msg.participant_count} 人`);
@@ -213,7 +244,7 @@ function main() {
     onMessage: (msg) => {
       if (msg.type === "state") applyState(msg);
       else if (msg.type === "questions") render(msg.items);
-      // chart は段階5 で扱う．
+      else if (msg.type === "chart") applyChart(msg);
     },
   });
 }

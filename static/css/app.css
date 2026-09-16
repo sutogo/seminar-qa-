@@ -301,3 +301,42 @@ body.is-offline .offline { display: block; }
 .warn code { font-family: var(--font-mono); font-size: var(--fs-small); }
 
 details summary { cursor: pointer; }
+
+/* ---- わからんグラフ ------------------------------------------------
+   「わからん」は暖色で統一する． */
+
+/* 投影では 3fr が十分な高さになるが，発表者が手元の小さなウィンドウで
+   開くと潰れる．最低限の高さを確保する． */
+#chart { display: flex; flex-direction: column; min-height: 160px; }
+#chart svg { flex: 1; min-height: 0; }
+
+.chart-grid { stroke: var(--line); stroke-width: 1; }
+.chart-label { fill: var(--ink-faint); font-size: var(--fs-axis); }
+
+.chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* 質疑へ移った瞬間に左から描き足す． */
+.chart-line.is-animated {
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+  animation: draw var(--dur-draw) var(--ease) forwards;
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+.chart-dot { fill: var(--accent); }
+
+/* ピーク区間の帯．線を描き終えてから遅れてフェードインさせる． */
+.chart-peak { fill: var(--accent-dim); }
+.chart-peak.is-animated {
+  opacity: 0;
+  animation: fade-in var(--dur) var(--ease) var(--dur-draw) forwards;
+}
+@keyframes fade-in { to { opacity: 1; } }
+
+.chart-caption { margin: 0; text-align: right; }
