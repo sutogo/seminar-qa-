@@ -13,6 +13,12 @@ import { connect } from "./ws.js";
 
 const $ = (id) => document.getElementById(id);
 
+// 質疑ビューのタブにも名前を付けるが，使い回しをブラウザ任せにしない．
+// 開いたタブの参照を自分で保持し，生きていれば開き直さない．
+// 発表ごとにタブが増えないことを，こちら側で保証する．
+const REVIEW_TAB = "seminar-review";
+let reviewTab = null;
+
 let sessionId = "";
 let current = null;      // 進行中の発表
 // 経過時間の起点．state は状態が変わったときにしか届かないので，
@@ -40,6 +46,8 @@ async function main() {
   $("join-url-small").textContent = session.join_url;
 
   $("register").addEventListener("submit", register);
+  // 人が押したときは前面に出す．発表の開始に伴う場合は出さない．
+  $("open-review").addEventListener("click", () => openReviewTab(true));
   $("advance").addEventListener("click", advance);
   $("copy").addEventListener("click", copyRecord);
   $("next").addEventListener("click", () => {
@@ -140,11 +148,43 @@ function showView(name) {
 // 操作
 // --------------------------------------------------------------------------
 
+/**
+ * 質疑ビューを別タブで開く．
+ *
+ * **await を挟む前に呼ぶこと．** 非同期の待ちを跨ぐとクリック操作との
+ * 結び付きが切れ，ブラウザのポップアップブロックに掛かる．
+ *
+ * 既に開いているタブがあれば開き直さない．同名のタブを使い回す挙動は
+ * ブラウザに委ねると確実でないため，参照を自分で持って判断する．
+ *
+ * @param {boolean} focusIt 人が押したときは true．前面に出す
+ * @returns {boolean} 質疑ビューが利用できる状態か
+ */
+function openReviewTab(focusIt = false) {
+  if (reviewTab && !reviewTab.closed) {
+    $("popup-hint").hidden = true;
+    if (focusIt) reviewTab.focus();
+    return true;
+  }
+
+  reviewTab = window.open("/review", REVIEW_TAB);
+  $("popup-hint").hidden = Boolean(reviewTab);
+  if (!reviewTab) return false;
+
+  // 開いたあと元のタブへ戻す．発表者はプロジェクタにスライドを映すため，
+  // 開始した瞬間に質疑ビューが前面へ出ると，映してはいけない画面が映る．
+  if (!focusIt) window.focus();
+  return true;
+}
+
 async function register(event) {
   event.preventDefault();
   const presenter = $("presenter").value.trim();
   const title = $("pres-title").value.trim();
   if (!presenter || !title) return;
+
+  // 通信の前に開く．await のあとでは間に合わない．
+  openReviewTab();
 
   const button = event.target.querySelector("button");
   button.disabled = true;

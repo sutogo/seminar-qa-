@@ -346,3 +346,13 @@ details summary { cursor: pointer; }
 @keyframes fade-in { to { opacity: 1; } }
 
 .chart-caption { margin: 0; text-align: right; }
+
+/* 文中に置く小さなボタン． */
+.row-inline { display: flex; align-items: center; gap: var(--sp-2); margin: 0; }
+
+.btn-inline {
+  width: auto;
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
