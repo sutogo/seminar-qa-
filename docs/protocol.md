@@ -87,6 +87,10 @@ IPアドレスをコードや設定に書く必要がない．
 - `empathy` は1トークンにつき1質問1回まで．重複は現在値を返す
 - `confusion` の記録値は発表開始からの経過秒（`elapsed_sec`）である．絶対時刻は保持しない
 - `resolve` はべき等．投影中の誤操作を戻せるよう，`DELETE` で消化を解除できる
+- `DELETE /api/questions/{qid}/empathy` は本文に `token` を伴う．
+  ブラウザの `fetch` は本文付きの `DELETE` を送れるが，
+  ライブラリによっては簡易メソッドが本文を落とす（httpx の `delete()` など）．
+  `api.js` では `fetch(url, {method:"DELETE", body})` を直接使うこと
 
 ## WebSocket
 
