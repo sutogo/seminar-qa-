@@ -54,6 +54,8 @@ function applyState(msg) {
       state.confusionCount = 0;
       state.lastConfusionAt = 0;
       keeper.reset();
+      questionCards.clear();
+      $("questions").replaceChildren();
       renderConfusionCount();
       renderMine();
     }
@@ -168,44 +170,92 @@ function updateCounter() {
 // 消化されたときだけ並べ替わるので，投影されている画面とも順番が一致する．
 const keeper = createOrderKeeper();
 
+// 質問ID -> カードの DOM．作り直さずに使い回す．
+// 以前は更新のたびに全て作り直していた．共感が1票入るだけで全カードが
+// 作り直され，@starting-style の出現アニメーションが再生されて画面がちらつく．
+const questionCards = new Map();
+
+// 共感が集中すると毎秒何十回も届く．値だけの更新はまとめる．
+const VALUE_THROTTLE_MS = 200;
+let questionTimer = null;
+let latestItems = null;
+
 function renderQuestions(items) {
+  latestItems = items;
+  if (questionTimer !== null) return;
+  questionTimer = setTimeout(() => {
+    questionTimer = null;
+    paintQuestions(latestItems);
+  }, VALUE_THROTTLE_MS);
+}
+
+function paintQuestions(items) {
   const list = $("questions");
   const { order } = keeper.arrange(items);
   const byId = new Map(items.map((q) => [q.id, q]));
 
-  list.replaceChildren();
+  for (const [id, el] of questionCards) {
+    if (!byId.has(id)) { el.remove(); questionCards.delete(id); }
+  }
 
+  let index = 0;
   for (const id of order) {
     const q = byId.get(id);
     if (!q) continue;
-    const card = document.createElement("div");
-    card.className = "card" + (q.resolved ? " resolved" : "");
 
-    const head = document.createElement("div");
-    head.className = "card-head";
+    let card = questionCards.get(id);
+    if (card) {
+      updateQuestionCard(card, q);
+    } else {
+      card = buildQuestionCard(q);
+      questionCards.set(id, card);
+    }
 
-    const badge = document.createElement("span");
-    badge.className = "badge";
-    badge.textContent = q.grade_label;
-
-    const btn = document.createElement("button");
-    btn.className = "btn btn-empathy";
-    btn.type = "button";
-    const pressed = state.empathized.has(q.id);
-    btn.setAttribute("aria-pressed", String(pressed));
-    btn.textContent = `共感 ${q.empathy_count}`;
-    btn.disabled = q.resolved;
-    btn.addEventListener("click", () => toggleEmpathy(q.id));
-
-    head.append(badge, btn);
-
-    const body = document.createElement("div");
-    body.className = "card-body";
-    body.textContent = q.body;
-
-    card.append(head, body);
-    list.append(card);
+    // 既に正しい位置にあるなら DOM に触れない．
+    if (list.children[index] !== card) {
+      list.insertBefore(card, list.children[index] || null);
+    }
+    index++;
   }
+  while (list.children.length > index) list.lastElementChild.remove();
+}
+
+function buildQuestionCard(q) {
+  const card = document.createElement("div");
+  card.className = "card";
+
+  const head = document.createElement("div");
+  head.className = "card-head";
+
+  const badge = document.createElement("span");
+  badge.className = "badge";
+
+  const btn = document.createElement("button");
+  btn.className = "btn btn-empathy";
+  btn.type = "button";
+  btn.addEventListener("click", () => toggleEmpathy(q.id));
+
+  head.append(badge, btn);
+
+  const body = document.createElement("div");
+  body.className = "card-body";
+
+  card.append(head, body);
+  card._parts = { badge, btn, body };
+  updateQuestionCard(card, q);
+  return card;
+}
+
+/** カードの中身だけを書き換える．要素は作り直さない． */
+function updateQuestionCard(card, q) {
+  const { badge, btn, body } = card._parts;
+  const label = `共感 ${q.empathy_count}`;
+  if (badge.textContent !== q.grade_label) badge.textContent = q.grade_label;
+  if (body.textContent !== q.body) body.textContent = q.body;
+  if (btn.textContent !== label) btn.textContent = label;
+  btn.setAttribute("aria-pressed", String(state.empathized.has(q.id)));
+  btn.disabled = q.resolved;
+  card.classList.toggle("resolved", q.resolved);
 }
 
 async function toggleEmpathy(qid) {

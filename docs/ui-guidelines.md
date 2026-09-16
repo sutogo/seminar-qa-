@@ -99,6 +99,42 @@ View Transitions API を用いる．
 実装は `static/js/order.js` に切り出し，
 質疑ビューと参加者画面の両方から使う．
 
+### 高頻度の更新でちらつかせないための規則
+
+短い時間に何度も更新が届くリストでは，並び順を止めるだけでは足りない．
+投影で確認した際に残っていたちらつきは，DOM の扱いが原因だった．
+次の4点を守ること．
+
+1. **カードの DOM を使い回す．作り直さない．**
+   同じ位置へ入れ直しても DOM としては取り外しと挿入であり，
+   そのたびに `@starting-style` の出現アニメーションが再生される．
+   修正前は9枚のカードに20票を投じたとき1,349回の付け外しが起きていた．
+   並びを走査し，**位置が違うカードだけ** `insertBefore` で動かす．
+2. **値が変わったときだけ書き込む．**
+   `textContent` への代入は，同じ文字列でもテキストノードを差し替える．
+   代入の前に現在値と比較する．
+3. **値だけの更新はまとめる（200ms）．**
+   共感は1票ごとに配信される．票が集中すると毎秒何十回も描き直すことになる．
+   ただし利用者の操作（消化）に伴う更新は待たせず即座に描く．
+   操作から 0.1 秒以内に反応が始まらないと，直接操作している感覚が失われる．
+4. **数字は `font-variant-numeric: tabular-nums` で字幅を揃える．**
+   9 から 10 へ桁が上がったときに幅が動くと，カード全体がずれて見える．
+
+この結果，40件の更新がカード移動0回・書き換え2回に収まった．
+
+参考にした資料：
+
+- Nielsen Norman Group「Animation for Attention and Comprehension」
+  <https://www.nngroup.com/articles/animation-usability/>
+  （注視点の外側の動きは注意を奪う．繰り返される演出は苛立ちに変わる．
+  操作への反応は 0.1 秒以内に始めること）
+- Nielsen Norman Group「The Role of Animation and Motion in UX」
+  <https://www.nngroup.com/articles/animation-purpose-ux/>
+- Smashing Magazine「UX Strategies For Real-Time Dashboards」（2025）
+  <https://www.smashingmagazine.com/2025/09/ux-strategies-real-time-dashboards/>
+  （更新頻度が高すぎると認知負荷になる．一時停止や間引きを用意する．
+  並び替えは空間記憶を保つため短めに）
+
 ```js
 function renderQuestions(items) {
   if (!document.startViewTransition) { paint(items); return; }

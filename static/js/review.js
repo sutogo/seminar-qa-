@@ -27,10 +27,17 @@ let presentationId = null;
 let chartData = null;
 
 // 描画待ちの最新データと，実行中かどうか．
-// 演出（320ms）が終わる前に次の更新が来ると，前の演出が中断されてガタつく．
+// 演出が終わる前に次の更新が来ると，前の演出が中断されてガタつく．
 // 実行中は最新のデータだけを覚えておき，終わってからまとめて描く．
 let pending = null;
 let running = false;
+
+// 共感は1票ごとに配信される．票が集中すると毎秒何十回も描き直すことになり，
+// 数字がちらついて読みにくい．値だけの更新はこの間隔でまとめる．
+// 消化（利用者の操作）に伴う更新は待たせず即座に描く．
+const VALUE_THROTTLE_MS = 200;
+let renderTimer = null;
+let lastResolvedSig = null;
 
 // --------------------------------------------------------------------------
 // 描画
@@ -39,7 +46,23 @@ let running = false;
 function render(items) {
   latest = items;
   pending = items;
-  if (!running) flush();
+
+  const sig = items.filter((q) => q.resolved).map((q) => q.id).sort().join(",");
+  const byUser = lastResolvedSig !== null && sig !== lastResolvedSig;
+  const first = lastResolvedSig === null;
+  lastResolvedSig = sig;
+
+  if (first || byUser) {
+    clearTimeout(renderTimer);
+    renderTimer = null;
+    if (!running) flush();
+    return;
+  }
+  if (renderTimer !== null || running) return;
+  renderTimer = setTimeout(() => {
+    renderTimer = null;
+    if (!running) flush();
+  }, VALUE_THROTTLE_MS);
 }
 
 async function flush() {
@@ -64,6 +87,14 @@ async function flush() {
   }
 }
 
+/**
+ * 望む並びに合わせて，**位置が違うカードだけ**を動かす．
+ *
+ * 以前は毎回すべてのカードを append し直していた．同じ位置へ入れ直しても
+ * DOM としては取り外しと挿入であり，そのたびに @starting-style の
+ * 出現アニメーションが再生される．これが更新のたびのちらつきの原因だった．
+ * 9枚のカードに20票を投じたとき，1,349回の付け外しが起きていた．
+ */
 function paint(items, order) {
   const list = $("questions");
   const byId = new Map(items.map((q) => [q.id, q]));
@@ -78,9 +109,11 @@ function paint(items, order) {
     return;
   }
 
+  let index = 0;
   for (const id of order) {
     const q = byId.get(id);
     if (!q) continue;
+
     let card = cards.get(id);
     if (card) {
       updateCard(card, q);
@@ -88,10 +121,16 @@ function paint(items, order) {
       card = buildCard(q);
       cards.set(id, card);
     }
-    // 既にある要素を append し直すと移動になる．
-    // 並びが同じであれば何も動かない．
-    list.append(card);
+
+    // 既に正しい位置にあるなら DOM に触れない．
+    if (list.children[index] !== card) {
+      list.insertBefore(card, list.children[index] || null);
+    }
+    index++;
   }
+
+  // 並びから漏れた要素（空メッセージなど）を末尾から取り除く．
+  while (list.children.length > index) list.lastElementChild.remove();
 }
 
 function emptyMessage() {
@@ -140,7 +179,9 @@ function updateCard(card, q) {
   if (badge.textContent !== q.grade_label) badge.textContent = q.grade_label;
   if (body.textContent !== q.body) body.textContent = q.body;
   if (num.textContent !== String(q.empathy_count)) num.textContent = String(q.empathy_count);
-  btn.textContent = q.resolved ? "戻す" : "消化";
+  // 無条件に書くと，値が同じでもテキストノードが差し替わって再描画が走る．
+  const label = q.resolved ? "戻す" : "消化";
+  if (btn.textContent !== label) btn.textContent = label;
   card.classList.toggle("resolved", q.resolved);
 }
 

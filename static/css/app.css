@@ -83,6 +83,8 @@ a { color: var(--ink-mid); }
   white-space: nowrap;
 }
 .btn-empathy[aria-pressed="true"] { background: var(--empathy); color: var(--bg); }
+/* 共感数が桁上がりしてもボタンの幅を動かさない． */
+.btn-empathy { font-variant-numeric: tabular-nums; }
 
 .btn-send {
   background: var(--surface-2);
@@ -221,6 +223,9 @@ body.is-offline .offline { display: block; }
   font-size: var(--fs-empathy);
   font-weight: 700;
   line-height: 1.2;
+  /* 9 から 10 に変わったときに幅が動くと，カード全体がずれて
+     ちらついて見える．数字の字幅を揃える． */
+  font-variant-numeric: tabular-nums;
 }
 
 .btn-resolve {
@@ -311,7 +316,8 @@ details summary { cursor: pointer; }
 #chart svg { flex: 1; min-height: 0; }
 
 .chart-grid { stroke: var(--line); stroke-width: 1; }
-.chart-label { fill: var(--ink-faint); font-size: var(--fs-axis); }
+/* 投影で読ませるため，軸ラベルは補助色ではなく副次的な文字色を使う． */
+.chart-label { fill: var(--ink-mid); font-size: var(--fs-axis); }
 
 .chart-line {
   fill: none;
