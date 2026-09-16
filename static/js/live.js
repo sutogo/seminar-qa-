@@ -5,6 +5,7 @@
 
 import { api, storage } from "./api.js";
 import { connect } from "./ws.js";
+import { createOrderKeeper } from "./order.js";
 
 // 「わからん」の受付間隔．サーバ側（store.py の CONFUSION_INTERVAL_SEC）と
 // 同じ値にしておく．超過分はサーバが黙って捨てるため，
@@ -52,6 +53,7 @@ function applyState(msg) {
       state.presentationId = pres.id;
       state.confusionCount = 0;
       state.lastConfusionAt = 0;
+      keeper.reset();
       renderConfusionCount();
       renderMine();
     }
@@ -161,11 +163,21 @@ function updateCounter() {
 // 質疑中の一覧と共感
 // --------------------------------------------------------------------------
 
+// 投影側と同じ規則で表示順を固定する．
+// 読もうとした瞬間に並びが変われば，押し間違えて別の質問に共感してしまう．
+// 消化されたときだけ並べ替わるので，投影されている画面とも順番が一致する．
+const keeper = createOrderKeeper();
+
 function renderQuestions(items) {
   const list = $("questions");
+  const { order } = keeper.arrange(items);
+  const byId = new Map(items.map((q) => [q.id, q]));
+
   list.replaceChildren();
 
-  for (const q of items) {
+  for (const id of order) {
+    const q = byId.get(id);
+    if (!q) continue;
     const card = document.createElement("div");
     card.className = "card" + (q.resolved ? " resolved" : "");
 

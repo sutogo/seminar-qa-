@@ -236,3 +236,17 @@ body.is-offline .offline { display: block; }
   animation-duration: var(--dur);
   animation-timing-function: var(--ease);
 }
+
+/* 並べ替えの指示ボタン．
+   サーバの並びと表示がずれている件数を出す．
+   押すまでカードは動かないので，発表者が読み終えてから動かせる． */
+.review-meta { display: flex; align-items: center; gap: var(--sp-2); }
+
+.btn-resort {
+  width: auto;
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--empathy-dim);
+  border-color: var(--empathy);
+  font-size: var(--fs-badge);
+  white-space: nowrap;
+}

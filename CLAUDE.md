@@ -120,6 +120,7 @@ seminar-qa/
 │       ├── api.js           REST 呼び出しの薄いラッパ
 │       ├── join.js
 │       ├── live.js
+│       ├── order.js        表示順の安定化（質疑ビューと参加者画面で共有）
 │       ├── present.js
 │       ├── review.js
 │       └── chart.js         SVG 折れ線の生成

@@ -39,7 +39,10 @@
   --fs-body:     calc(1rem    * var(--type-scale));
   --fs-question: calc(1.5rem  * var(--type-scale));
   --fs-badge:    calc(0.85rem * var(--type-scale));
-  --fs-empathy:  calc(1.25rem * var(--type-scale));
+  /* 共感数は投影で読む数字である．
+     当初 1.25rem としたが，実際に投影すると質問本文（1.5rem）に負けて
+     弱く見えたため 1.75rem に上げた．本文より大きいのは意図である． */
+  --fs-empathy:  calc(1.75rem * var(--type-scale));
   --fs-heading:  calc(2rem    * var(--type-scale));
   --fs-axis:     calc(0.9rem  * var(--type-scale));
   --fs-small:    calc(0.8rem  * var(--type-scale));
