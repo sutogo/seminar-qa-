@@ -34,12 +34,15 @@ class Hub:
 
         発表者が「今何人見ているか」を把握するための数である．
         グラフの分母（延べの接続者数）とは定義が異なるので混同しないこと．
+
+        投影用ビュー（/review）と発表者ビュー（/present）はトークンを持たずに
+        接続する．これを数えると聴衆が1〜2人多く見えるため，空のトークンは除く．
         """
-        return len(set(self._connections.values()))
+        return len(self.connected_tokens())
 
     def connected_tokens(self) -> set[str]:
-        """現在接続しているトークンの集合．発表開始時に分母の初期値として使う．"""
-        return set(self._connections.values())
+        """現在接続している参加者のトークン．発表開始時に分母の初期値として使う．"""
+        return {t for t in self._connections.values() if t}
 
     async def broadcast(self, message: dict) -> None:
         """全接続へ1つのメッセージを送る．

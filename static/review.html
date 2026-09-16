@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>質疑 — ゼミ質疑</title>
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+<main class="layout" id="layout">
+
+  <header class="review-head">
+    <div>
+      <h1 id="pres-title">質疑</h1>
+      <p class="muted" id="pres-presenter"></p>
+    </div>
+    <p class="faint" id="meta"></p>
+  </header>
+
+  <!-- グラフ．段階5 で chart.js が中身を描く． -->
+  <section id="chart" hidden></section>
+
+  <section id="questions" class="stack" aria-live="polite"></section>
+
+  <p class="offline">接続が切れています．自動で繋ぎ直します．</p>
+</main>
+<script type="module" src="/static/js/review.js"></script>
+</body>
+</html>

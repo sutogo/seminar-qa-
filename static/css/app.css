@@ -171,3 +171,68 @@ body.is-offline .offline { display: block; }
   .btn:active { transform: none; }
   ::view-transition-group(*) { animation-duration: 0.01ms !important; }
 }
+
+/* ---- 質疑ビュー（投影） --------------------------------------------
+   上部3割にグラフ，下部7割に質問リスト．
+   一度に見えるのは質問4件程度でよい．詰め込むと投影で読めなくなる． */
+
+.layout {
+  height: 100dvh;
+  max-width: none;
+  margin: 0;
+  padding: var(--sp-3);
+  display: grid;
+  grid-template-rows: auto 1fr;   /* グラフが入るまではリストが全面を使う */
+  gap: var(--sp-2);
+}
+
+/* 段階5 でグラフが入ったら 3:7 に分ける． */
+.layout.with-chart { grid-template-rows: auto 3fr 7fr; }
+
+.review-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-1);
+  border-bottom: 1px solid var(--line);
+}
+
+#questions { overflow-y: auto; }
+
+.q-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+
+.q-main { flex: 1; min-width: 0; }
+.q-main .badge { margin-bottom: var(--sp-1); }
+
+.q-side {
+  flex: 0 0 auto;
+  width: var(--sp-8);
+  text-align: center;
+}
+
+.empathy-num {
+  color: var(--empathy);
+  font-size: var(--fs-empathy);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.btn-resolve {
+  margin-top: var(--sp-1);
+  padding: var(--sp-1);
+  font-size: var(--fs-badge);
+}
+
+/* 並び替えの演出．
+   共感が入って順位が変わる瞬間が，最も見られる箇所である．
+   非対応の環境では DOM が普通に更新されるだけで壊れない． */
+::view-transition-group(*) {
+  animation-duration: var(--dur);
+  animation-timing-function: var(--ease);
+}
