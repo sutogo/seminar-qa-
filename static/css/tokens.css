@@ -1,0 +1,67 @@
+/* 設計トークン．
+   色・余白・フォントはここに集約する．
+   他のファイルに直接 #rrggbb を書かないこと（docs/ui-guidelines.md）． */
+
+:root {
+  /* ---- 配色 ----------------------------------------------------------
+     会場は照明を落とす想定のため，ダークテーマ固定とする．
+     ライトテーマは実装しない．
+     暖色と寒色を1つずつに絞る．「わからん」は暖色，「共感」は寒色で統一し，
+     この2色以外のアクセントを増やさない．色数が増えた時点で安く見える． */
+  --bg:         #121211;  /* 背景．完全な黒は避ける */
+  --surface:    #1c1c1a;  /* カード面 */
+  --surface-2:  #262623;  /* 前面に出す要素 */
+  --line:       #34332e;  /* 罫線 */
+
+  --ink:        #f2f0ea;  /* 主文字 */
+  --ink-mid:    #a8a59c;  /* 副次的な文字 */
+  --ink-faint:  #6e6b64;  /* ラベル，補助 */
+
+  --accent:     #e2613c;  /* わからん系．暖色 */
+  --accent-dim: #5a2a1c;
+  --empathy:    #4a9d8f;  /* 共感系．寒色 */
+  --empathy-dim:#1e3a36;
+
+  /* ---- タイポグラフィ -------------------------------------------------
+     フォントファイルは同梱していない．CDN もオンラインのフォントサービスも
+     使わない（会場のネットワークに依存させないため）ので，
+     指定した名前が無ければシステムフォントに落ちる． */
+  --font-sans: "Zen Kaku Gothic New", "BIZ UDPGothic",
+               "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* 投影（review.html）を基準にした寸法．
+     スマートフォンでは body に .phone を付けて 0.7 倍する．
+     倍率を1箇所に集めることで，投影して文字が小さかったときに
+     ここだけ直せば全画面に効く． */
+  --type-scale: 1;
+
+  --fs-body:     calc(1rem    * var(--type-scale));
+  --fs-question: calc(1.5rem  * var(--type-scale));
+  --fs-badge:    calc(0.85rem * var(--type-scale));
+  --fs-empathy:  calc(1.25rem * var(--type-scale));
+  --fs-heading:  calc(2rem    * var(--type-scale));
+  --fs-axis:     calc(0.9rem  * var(--type-scale));
+  --fs-small:    calc(0.8rem  * var(--type-scale));
+
+  /* ---- 余白 -----------------------------------------------------------
+     8px を基本単位とし，これ以外の値を使わない． */
+  --sp-1: 8px;
+  --sp-2: 16px;
+  --sp-3: 24px;
+  --sp-4: 32px;
+  --sp-6: 48px;
+  --sp-8: 64px;
+
+  /* 角丸はここに統一する．カードごとに変えない． */
+  --radius: 12px;
+
+  /* ---- 動き -----------------------------------------------------------
+     アニメーションの総時間は 400ms を超えない． */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur:  320ms;
+  --dur-fast: 200ms;
+}
+
+/* 「わからん」ボタンの高さ．画面を見ずに押せることを目標とする． */
+:root { --confusion-btn-h: 96px; }

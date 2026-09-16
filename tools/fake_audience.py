@@ -180,7 +180,8 @@ async def main() -> int:
     parser = argparse.ArgumentParser(description="ダミー参加者を生成する")
     parser.add_argument("--host", default="127.0.0.1:8000",
                         help="サーバの host:port（既定 127.0.0.1:8000）")
-    parser.add_argument("--session", default="s_01", help="セッションID")
+    parser.add_argument("--session", default="",
+                        help="セッションID（既定：サーバから自動取得する）")
     parser.add_argument("--count", type=int, default=12, help="人数（既定 12）")
     parser.add_argument("--watch", action="store_true",
                         help="受信したメッセージを全て表示する（段階1の確認用）")
@@ -190,7 +191,19 @@ async def main() -> int:
     print(f"\n  {base_url} へ {args.count} 人のダミー参加者を接続する\n")
 
     async with httpx.AsyncClient(base_url=base_url, timeout=10) as client:
-        fakes = [Fake(i + 1, args.host, args.session, args.watch)
+        # セッションIDは起動ごとに変わるため，既定ではサーバに問い合わせる．
+        session_id = args.session
+        if not session_id:
+            try:
+                r = await client.get("/api/sessions/current")
+                r.raise_for_status()
+                session_id = r.json()["session_id"]
+            except httpx.HTTPError as exc:
+                print(f"  サーバに繋がらない：{exc}\n")
+                return 1
+            print(f"  セッション {session_id} に参加する")
+
+        fakes = [Fake(i + 1, args.host, session_id, args.watch)
                  for i in range(args.count)]
 
         # 参加登録．ここで失敗するならサーバかセッションIDが違う．

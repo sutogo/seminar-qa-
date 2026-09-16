@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>参加 — ゼミ質疑</title>
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="phone">
+<main class="wrap stack">
+  <h1>ゼミ質疑</h1>
+  <p class="muted" id="session-title"></p>
+
+  <section id="choose" class="stack" hidden>
+    <p>学年を選んでください．</p>
+    <div id="grades" class="grid-2"></div>
+  </section>
+
+  <section id="already" class="stack" hidden>
+    <p>参加済みです（<span id="current-grade"></span>）．</p>
+    <button class="btn" id="continue">このまま続ける</button>
+    <button class="btn" id="rechoose">学年を選び直す</button>
+  </section>
+
+  <p class="faint" id="error" hidden></p>
+
+  <p class="faint">
+    氏名・学籍番号・IPアドレスは記録しません．<br>
+    投稿が誰のものかは，発表者にも分かりません．
+  </p>
+</main>
+<script type="module" src="/static/js/join.js"></script>
+</body>
+</html>

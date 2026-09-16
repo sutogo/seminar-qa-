@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ゼミ質疑</title>
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="phone">
+<main class="wrap stack">
+
+  <p class="offline">接続が切れています．自動で繋ぎ直します．</p>
+
+  <header id="head" class="head-compact">
+    <p class="faint" id="state-label">接続しています…</p>
+    <h1 id="pres-title"></h1>
+    <p class="muted" id="pres-presenter"></p>
+  </header>
+
+  <!-- 発表の開始待ち -->
+  <section id="view-waiting" hidden>
+    <p class="muted">発表の開始を待っています．</p>
+  </section>
+
+  <!-- 発表中：わからんと質問投稿 -->
+  <section id="view-live" class="stack" hidden>
+    <button class="btn btn-confusion" id="confusion" type="button">わからん</button>
+    <p class="faint center" id="confusion-count">まだ押していません</p>
+
+    <form id="question-form" class="stack">
+      <textarea class="field" id="question-body" rows="3" maxlength="200"
+                placeholder="質問を書く（200字以内・匿名）"></textarea>
+      <p class="faint" id="question-count">0 / 200</p>
+      <button class="btn btn-send" type="submit">質問を送る</button>
+    </form>
+
+    <section id="mine" class="stack" hidden>
+      <p class="faint">自分の投稿</p>
+      <div id="mine-list" class="stack"></div>
+    </section>
+
+    <p class="faint">
+      発表中は，他の人の質問は表示されません．質疑に入ると一覧が出ます．
+    </p>
+  </section>
+
+  <!-- 質疑中：一覧と共感 -->
+  <section id="view-review" class="stack" hidden>
+    <p class="faint">共感の多い順に並びます．聞きたいものを押してください．</p>
+    <div id="questions" class="stack"></div>
+
+    <form id="question-form-2" class="stack">
+      <textarea class="field" id="question-body-2" rows="2" maxlength="200"
+                placeholder="質疑中に追加で質問する（200字以内）"></textarea>
+      <button class="btn btn-send" type="submit">質問を送る</button>
+    </form>
+  </section>
+
+  <p class="faint center"><a href="/join" id="rejoin">学年を選び直す</a></p>
+</main>
+<script type="module" src="/static/js/live.js"></script>
+</body>
+</html>

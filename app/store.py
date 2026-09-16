@@ -36,7 +36,15 @@ class Store:
     """セッション1つ分の状態．"""
 
     def __init__(self, title: str, date: str) -> None:
-        self.session = Session(id="s_01", title=title, date=date)
+        # セッションIDは起動ごとに変える．
+        # 固定にすると，サーバを再起動したときに参加者の端末が
+        # 「同じセッションが続いている」と誤認する．
+        # 手元のトークンは再起動で無効になっているので，
+        # 投稿が 401 で黙って失敗し，原因が分からなくなる．
+        # IDが変われば，クライアントが再参加を促せる．
+        self.session = Session(
+            id=f"s_{secrets.token_hex(3)}", title=title, date=date
+        )
         # 連番の採番用．表示にも使うので p_01 / q_01 の形にする．
         self._presentation_seq = 0
         self._question_seq = 0
