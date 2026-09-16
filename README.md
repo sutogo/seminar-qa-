@@ -42,7 +42,14 @@ ipconfig getifaddr en0 || hostname -I
 ipconfig
 ```
 
-参加者は `http://<サーバPCのIP>:8000/join?s=<session_id>` へ接続する．
+参加者は `/present` に表示されるQRコードを読んで参加する．
+参加用URLは `http://<サーバPCのIP>:8000/join?s=<session_id>` の形だが，手入力は想定しない．
+
+セッションはサーバ起動時に自動生成されるため，作成操作は不要である．
+
+**`/present` は必ずLAN側のIPアドレスで開くこと．** QRのホスト名はアクセスに使われた
+URLから組み立てるため，`http://localhost:8000/present` で開くと
+QRも `localhost` を指し，スマートフォンから接続できない．
 
 ## 検証用のダミー参加者
 
@@ -54,7 +61,7 @@ python tools/fake_audience.py --session <session_id> --count 12
 
 ## 当日の進行
 
-1. サーバを起動し，セッションを作成する
+1. サーバを起動する（セッションは自動生成される）
 2. スクリーンにQRコードを投影して参加者に読ませる
 3. 発表者が `/present` を開き「発表開始」
 4. 発表終了後，スクリーンを `/review` に切り替えて質疑
