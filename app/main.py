@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import io
 import logging
 import os
@@ -34,9 +35,13 @@ app = FastAPI(title="ゼミ質疑支援アプリ")
 
 # セッションはサーバ起動時に1つだけ自動生成する（requirements.md §5）．
 # ゼミ1回で完結するため，1プロセス＝1セッションで足りる．
+#
+# 日付は必ず入れる．記録が当日の唯一の出力である以上，日付の無い記録は
+# 後から中間発表と期末発表を区別できず，価値が大きく下がる．
+# 環境変数で上書きできるが，未指定なら起動日を使う．
 store = Store(
     title=os.environ.get("SEMINAR_TITLE", "ゼミ"),
-    date=os.environ.get("SEMINAR_DATE", ""),
+    date=os.environ.get("SEMINAR_DATE") or datetime.date.today().isoformat(),
 )
 hub = Hub()
 
@@ -387,12 +392,13 @@ def _cli() -> None:
     """
     parser = argparse.ArgumentParser(description="ゼミ質疑支援アプリ")
     parser.add_argument("--title", default="ゼミ", help="セッションのタイトル")
-    parser.add_argument("--date", default="", help="日付")
+    parser.add_argument("--date", default="", help="日付（既定：起動日）")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
 
     store.session.title = args.title
-    store.session.date = args.date
+    if args.date:
+        store.session.date = args.date
 
     import uvicorn
     # --host 0.0.0.0 は必須．これがないとスマートフォンから接続できない．
