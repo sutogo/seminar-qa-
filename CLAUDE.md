@@ -142,7 +142,7 @@ seminar-qa/
 | 3 | `review.html`（一覧・共感・消化），View Transitions | 並び替えの気持ちよさ |
 | 4 | `present.html`，発表の開始／終了／切替 | 2人分を連続で回せるか |
 | 5 | `chart.js`（わからんグラフ） | 折れ線が読めるか |
-| 6 | `record.py`（記録の生成），`teams.py`（任意の Teams 投稿） | 記録をコピーして貼れるか |
+| 6 | `teams.py`（任意の Teams 投稿） | カードが届くか |
 | 7 | リハーサル（最低30分確保） | 投影して文字が読めるか |
 
 `tools/fake_audience.py` は段階1の直後に作ること．

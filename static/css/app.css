@@ -250,3 +250,54 @@ body.is-offline .offline { display: block; }
   font-size: var(--fs-badge);
   white-space: nowrap;
 }
+
+/* ---- 発表者ビュー --------------------------------------------------
+   数字を大きく見せるだけの画面．装飾は入れない． */
+
+.present { max-width: 640px; }
+
+.present-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.figure {
+  font-size: var(--fs-figure);
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;  /* 数字が動いても幅がぶれない */
+}
+
+.figures { display: flex; gap: var(--sp-6); justify-content: center; }
+
+.qr-box {
+  padding: var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: center;
+}
+/* QRは白地でなければ読み取れない． */
+.qr-box img { background: var(--qr-bg); border-radius: var(--radius); }
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  padding: var(--sp-2);
+}
+
+.warn {
+  padding: var(--sp-2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent-dim);
+  color: var(--ink);
+}
+.warn code { font-family: var(--font-mono); font-size: var(--fs-small); }
+
+details summary { cursor: pointer; }

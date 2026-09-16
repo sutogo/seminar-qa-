@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>発表者 — ゼミ質疑</title>
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+<main class="wrap stack present">
+
+  <p class="warn" id="localhost-warn" hidden>
+    <b>このURLでは参加者が接続できません．</b><br>
+    <code id="warn-host"></code> で開いているため，QRも同じ宛先を指します．
+    サーバPCのLAN側のIPアドレス（例 <code>http://192.168.1.5:8000/present</code>）で開き直してください．
+  </p>
+  <p class="offline">接続が切れています．自動で繋ぎ直します．</p>
+
+  <header class="present-head">
+    <div>
+      <h1 id="title">ゼミ質疑</h1>
+      <p class="muted" id="subtitle"></p>
+    </div>
+    <div class="center">
+      <div class="figure" id="participants">0</div>
+      <div class="faint">接続中</div>
+    </div>
+  </header>
+
+  <!-- 待機：QRと発表の登録 -->
+  <section id="view-waiting" class="stack" hidden>
+    <div class="qr-box">
+      <img id="qr" alt="参加用QRコード" width="240" height="240">
+      <p class="faint" id="join-url"></p>
+    </div>
+
+    <form id="register" class="stack">
+      <input class="field" id="presenter" maxlength="40" placeholder="発表者名" autocomplete="off" required>
+      <input class="field" id="pres-title" maxlength="120" placeholder="発表タイトル" autocomplete="off" required>
+      <button class="btn btn-primary" type="submit">この内容で発表を開始</button>
+    </form>
+  </section>
+
+  <!-- 進行中 -->
+  <section id="view-running" class="stack" hidden>
+    <div class="figures">
+      <div class="center">
+        <div class="figure" id="elapsed">0:00</div>
+        <div class="faint">経過</div>
+      </div>
+      <div class="center">
+        <div class="figure" id="questions">0</div>
+        <div class="faint">質問</div>
+      </div>
+    </div>
+
+    <p class="faint center" id="hint"></p>
+
+    <button class="btn btn-primary" id="advance" type="button"></button>
+
+    <details>
+      <summary class="faint">参加用QR（遅れて来た人向け）</summary>
+      <div class="qr-box">
+        <img id="qr-small" alt="参加用QRコード" width="160" height="160">
+        <p class="faint" id="join-url-small"></p>
+      </div>
+    </details>
+  </section>
+
+  <!-- 質疑終了後の記録 -->
+  <section id="view-record" class="stack" hidden>
+    <h2>記録</h2>
+    <p class="faint" id="teams-status"></p>
+    <textarea class="field" id="record" rows="14" readonly></textarea>
+    <button class="btn" id="copy" type="button">記録をコピー</button>
+    <p class="faint" id="copy-status"></p>
+    <button class="btn btn-primary" id="next" type="button">次の発表を登録する</button>
+  </section>
+
+</main>
+<script type="module" src="/static/js/present.js"></script>
+</body>
+</html>
