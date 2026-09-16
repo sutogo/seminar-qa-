@@ -42,7 +42,13 @@ async function main() {
   $("register").addEventListener("submit", register);
   $("advance").addEventListener("click", advance);
   $("copy").addEventListener("click", copyRecord);
-  $("next").addEventListener("click", () => showView("waiting"));
+  $("next").addEventListener("click", () => {
+    // 前の発表者の入力を必ず捨ててから待機へ戻す．
+    // 常設PCで使い回す場合，残ったまま次の人が開始すると
+    // 記録に別人の名前が載る．
+    clearRegisterForm();
+    showView("waiting");
+  });
 
   setInterval(tickElapsed, 1000);
 
@@ -111,6 +117,19 @@ function tickElapsed() {
   $("elapsed").textContent = `${m}:${String(s).padStart(2, "0")}`;
 }
 
+/**
+ * 発表の登録フォームを空にする．
+ *
+ * 待機ビューを表示するたびに消すのは危ない．参加者が増減すると
+ * state が届き，発表が未登録の間は待機ビューが描き直される．
+ * そこで消すと，発表者が入力している最中に文字が消える．
+ * 消すのは「開始した直後」と「次の発表を登録する を押したとき」だけにする．
+ */
+function clearRegisterForm() {
+  $("presenter").value = "";
+  $("pres-title").value = "";
+}
+
 function showView(name) {
   $("view-waiting").hidden = name !== "waiting";
   $("view-running").hidden = name !== "running";
@@ -133,8 +152,7 @@ async function register(event) {
     const { presentation_id } = await api.createPresentation(sessionId, presenter, title);
     // 未完了の発表が残っていても，サーバ側が自動的に閉じる（FR-03）．
     await api.start(presentation_id);
-    $("presenter").value = "";
-    $("pres-title").value = "";
+    clearRegisterForm();
   } catch (err) {
     console.error("発表の開始に失敗した", err);
     alert("発表を開始できませんでした．");
