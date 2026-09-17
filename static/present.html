@@ -10,11 +10,15 @@
 <body>
 <main class="wrap stack present">
 
-  <p class="warn" id="localhost-warn" hidden>
-    <b>このURLでは参加者が接続できません．</b><br>
-    <code id="warn-host"></code> で開いているため，QRも同じ宛先を指します．
-    サーバPCのLAN側のIPアドレス（例 <code>http://192.168.1.5:8000/present</code>）で開き直してください．
+  <p class="warn" id="host-warn" hidden>
+    <b>このQRでは参加者が接続できません．</b><br>
+    QRの宛先が <code id="warn-host"></code> になっています．
+    サーバPCのLAN側のIPアドレス（例 <code>http://192.168.1.5:8000/present</code>）で
+    この画面を開き直してください．<br>
+    IPアドレスは <code>ipconfig getifaddr en0</code>（Windows は <code>ipconfig</code>）で調べられます．
   </p>
+
+  <p class="faint" id="host-note" hidden></p>
   <p class="offline">接続が切れています．自動で繋ぎ直します．</p>
 
   <header class="present-head">

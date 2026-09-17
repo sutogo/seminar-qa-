@@ -15,6 +15,7 @@ import datetime
 import io
 import logging
 import os
+import socket
 
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
@@ -30,6 +31,13 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+
+# ここで /present を開くと，QRも同じ宛先を指してしまい，
+# スマートフォンからは到達できない．
+# 0.0.0.0 は「全ての接続を受け付ける」というサーバ側の表記であって，
+# 接続先のアドレスではない．uvicorn の起動メッセージにこれが出るため，
+# そのまま開いてしまう事故が起きやすい．
+UNREACHABLE_HOSTS = {"", "0.0.0.0", "localhost", "127.0.0.1", "::1"}
 
 app = FastAPI(title="ゼミ質疑支援アプリ")
 
@@ -95,6 +103,31 @@ async def push_questions() -> None:
 # セッション
 # --------------------------------------------------------------------------
 
+def _lan_ip() -> str | None:
+    """外向き通信に使う自分のIPv4アドレスを得る．
+
+    8.8.8.8 へ UDP ソケットを「接続」するが，UDP なのでパケットは送出されない．
+    OS のルーティング表を引かせるためだけの常套手段である．
+    """
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(("8.8.8.8", 80))
+        return str(sock.getsockname()[0])
+    except OSError:
+        return None
+    finally:
+        sock.close()
+
+
+def _split_host(host: str) -> tuple[str, str]:
+    """Host ヘッダを (ホスト名, ポート) に分ける．IPv6 の [::1]:8000 も扱う．"""
+    if host.startswith("["):
+        name, _, port = host.partition("]")
+        return name.lstrip("["), port.lstrip(":")
+    name, _, port = host.partition(":")
+    return name, port
+
+
 def _join_url(request: Request, sid: str) -> str:
     """参加用URLを組み立てる．
 
@@ -102,10 +135,20 @@ def _join_url(request: Request, sid: str) -> str:
     発表者が http://192.168.1.5:8000/present を開けば，
     QRも同じIPを指すため，IPアドレスを設定に書く必要がない．
 
-    裏返しとして，localhost で開くとQRも localhost を指し，
-    スマートフォンからは一切繋がらない．この警告は画面側で出す．
+    ただし 0.0.0.0 や localhost で開かれると，QRも到達できない宛先を指す．
+    uvicorn は起動時に http://0.0.0.0:8000 と表示するため，
+    それをそのまま開いてしまう事故が起きやすい．
+    その場合は，このPCのLAN側のIPアドレスに置き換える．
+    置き換えられなかった場合は画面側で警告を出す．
     """
-    host = request.headers.get("host", f"127.0.0.1:{request.url.port or 8000}")
+    host = request.headers.get("host", "")
+    name, port = _split_host(host)
+
+    if name in UNREACHABLE_HOSTS:
+        lan = _lan_ip()
+        if lan:
+            host = f"{lan}:{port or request.url.port or 8000}"
+
     return f"{request.url.scheme}://{host}/join?s={sid}"
 
 

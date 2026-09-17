@@ -31,9 +31,8 @@ let elapsedAt = 0;
 // --------------------------------------------------------------------------
 
 async function main() {
-  warnIfLocalhost();
-
   const session = await api.currentSession();
+  checkQrTarget(session);
   sessionId = session.session_id;
 
   $("title").textContent = session.title || "ゼミ質疑";
@@ -68,16 +67,38 @@ async function main() {
   });
 }
 
+// スマートフォンから到達できないホスト名．
+// 0.0.0.0 は「全ての接続を受け付ける」というサーバ側の表記であって，
+// 接続先のアドレスではない．uvicorn の起動メッセージに出るため，
+// そのまま開いてしまう事故が起きやすい．
+const UNREACHABLE = ["0.0.0.0", "localhost", "127.0.0.1", "::1"];
+
 /**
- * localhost で開くと，QRも localhost を指してスマートフォンから繋がらない．
- * 参加用URLはリクエストの Host ヘッダから組み立てているためである．
- * 当日にこれをやると，全員が参加できないまま原因が分からなくなる．
+ * QRが指す宛先を確かめる．
+ *
+ * 参加用URLはリクエストの Host ヘッダから組み立てるため，
+ * この画面をどのアドレスで開いたかがQRの宛先になる．
+ * 到達できないアドレスで開いた場合，サーバがLAN側のIPへ置き換えるが，
+ * 置き換えられないこともある．当日これに気付けないと，
+ * 全員が参加できないまま原因が分からなくなる．
  */
-function warnIfLocalhost() {
-  const host = location.hostname;
-  if (host === "localhost" || host === "127.0.0.1" || host === "[::1]") {
-    $("warn-host").textContent = location.origin;
-    $("localhost-warn").hidden = false;
+function checkQrTarget(session) {
+  const target = new URL(session.join_url).hostname;
+
+  if (UNREACHABLE.includes(target)) {
+    $("warn-host").textContent = new URL(session.join_url).origin;
+    $("host-warn").hidden = false;
+    return;
+  }
+
+  // 置き換えが起きた場合は，念のため宛先を知らせる．
+  // 複数のネットワークに繋がっていると，別の経路のIPが選ばれることがある．
+  if (target !== location.hostname) {
+    $("host-note").textContent =
+      `この画面は ${location.host} で開いていますが，`
+      + `QRは ${new URL(session.join_url).host} を指しています．`
+      + `参加者と同じWi-Fiのアドレスか確認してください．`;
+    $("host-note").hidden = false;
   }
 }
 
