@@ -86,11 +86,37 @@ python3 tools/check_network.py
 
 ## 起動
 
+**ターミナルで実行する．**（macOS なら「ターミナル.app」）
+まずプロジェクトのディレクトリへ移動する．
+
+```bash
+cd ~/Documents/seminar-qa
+```
+
+そのうえで起動する．
+
 ```bash
 SEMINAR_TITLE="中間発表レビュー" .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
+`Uvicorn running on http://0.0.0.0:8000` と出たら起動できている．
+**そのまま止まらずに動き続けるのが正常である．** 止めるときは `Ctrl-C` を押す．
+ゼミの間はこのターミナルを閉じないこと．
+
+先頭の `SEMINAR_TITLE=...` は，この1回の実行にだけ効く環境変数の指定である．
+省略してよい（その場合は画面に「ゼミ」と出る）．
+
+`cd` が要るのは，`.venv/bin/uvicorn` も `app.main` もプロジェクトの
+ディレクトリからの相対指定だからである．別の場所で実行すると見つからない．
+`source .venv/bin/activate` は不要である（`.venv/bin/uvicorn` と直接指定しているため）．
+
 `--host 0.0.0.0` は必須である．これがないとスマートフォンから接続できない．
+
+Windows（PowerShell）で動かす場合は書き方が異なる：
+
+```powershell
+$env:SEMINAR_TITLE="中間発表レビュー"; .\.venv\Scripts\uvicorn.exe app.main:app --host 0.0.0.0 --port 8000
+```
 
 | 環境変数 | 既定値 | 内容 |
 |---|---|---|
